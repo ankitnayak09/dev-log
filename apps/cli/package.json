@@ -1,0 +1,16 @@
+{
+  "name": "devlog-cli",
+  "version": "1.0.0",
+  "description": "cli tool to work with entries",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "author": "Ankit Nayak",
+  "license": "MIT",
+  "bin": {
+    "dev-log": "dist/index.js"
+  }
+}
