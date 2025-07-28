@@ -4,11 +4,11 @@ import fs from "fs";
 import path from "path";
 import prompts from "prompts";
 
+// TODO: Customizable through CLI command
+// TODO: CLI command to change the notes directory
+// TODO: CLI command to show where all notes are present
 import { LOGS_DIR } from "./constants";
 import FileContentViewer from "./utils/fileContentViewer";
-// TODO: Customizable through CLI command
-// TODO: CLI command to show where all notes are present
-// TODO: CLI command to change the notes directory
 
 // Ensure notes directory exists
 if (!fs.existsSync(LOGS_DIR)) {
@@ -83,18 +83,13 @@ async function searchNotes() {
 	}
 	const files = fs.readdirSync(LOGS_DIR).filter((f) => f.endsWith(".md"));
 	const matchingFiles: string[] = [];
+
+	// All the file checks start at once
 	await Promise.all(
 		files.map(async (file) => {
 			const filepath = path.join(LOGS_DIR, file);
-			const content = fs.readFileSync(filepath, "utf-8");
-			if (content.includes(query)) {
-				// console.log(`${file}:`);
-				// // Optionally, print matching lines:
-				// content.split("\n").forEach((line, i) => {
-				// 	if (line.includes(query)) {
-				// 		console.log(`  ${i + 1}: ${line}`);
-				// 	}
-				// });
+			const data = await fs.promises.readFile(filepath, "utf-8");
+			if (data.includes(query)) {
 				matchingFiles.push(file);
 			}
 		})
