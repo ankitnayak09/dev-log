@@ -12,5 +12,9 @@
   "license": "MIT",
   "bin": {
     "dev-log": "dist/index.js"
+  },
+  "dependencies": {
+    "@types/prompts": "^2.4.9",
+    "prompts": "^2.4.2"
   }
 }
