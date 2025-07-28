@@ -14,26 +14,66 @@ export default async function FileContentViewer(matchingFiles: string[]) {
 				title: file,
 				value: file,
 			})),
+			// onCancel: () => {
+			// 	console.clear();
+			// 	process.exit(0);
+			// },
 		});
-		if (!selectedFile) break;
+		if (!selectedFile) {
+			console.clear();
+			process.exit(0);
+		}
 
 		const selectedFilePath = path.join(LOGS_DIR, selectedFile);
 		const content = fs.readFileSync(selectedFilePath, "utf-8");
 		console.clear();
-		console.log(content);
-		console.log("\nPress ESC to return to the list.");
+		// console.log(content);
+		const lines = content.split("\n");
+		const pageSize = process.stdout.rows - 2; // Leave space for prompt
+		let start = 0;
+
+		function printPage() {
+			console.clear();
+			for (
+				let i = start;
+				i < Math.min(start + pageSize, lines.length);
+				i++
+			) {
+				console.log(lines[i]);
+			}
+			console.log("\nUse ↑/↓ to scroll, ESC to return.");
+		}
+
+		printPage();
 
 		// Wait for Escape Key
-		await new Promise((resolve) => {
+		await new Promise<void>((resolve) => {
 			process.stdin.setRawMode(true);
 			process.stdin.resume();
-			process.stdin.once("data", (data) => {
-				if (data.toString() === "\u001b") {
-					process.stdin.setRawMode(false);
-					process.stdin.pause();
-					resolve(null);
+			process.stdin.on("data", onKey);
+
+			function onKey(data: Buffer) {
+				const key = data.toString();
+				if (key === "\u001b") {
+					// ESC
+					cleanup();
+					resolve();
+				} else if (key === "\u001b[A") {
+					// Up arrow
+					if (start > 0) start--;
+					printPage();
+				} else if (key === "\u001b[B") {
+					// Down arrow
+					if (start + pageSize < lines.length) start++;
+					printPage();
 				}
-			});
+			}
+
+			function cleanup() {
+				process.stdin.setRawMode(false);
+				process.stdin.pause();
+				process.stdin.removeListener("data", onKey);
+			}
 		});
 	}
 	console.clear();
