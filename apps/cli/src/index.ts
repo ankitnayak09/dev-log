@@ -80,7 +80,7 @@ async function searchNotes() {
 	if (!query) {
 		query = await prompt("query", "Search Term: ");
 		if (!query) {
-			process.exit(1);
+			process.exit(0);
 		}
 	}
 	const files = fs.readdirSync(LOGS_DIR).filter((f) => f.endsWith(".md"));
