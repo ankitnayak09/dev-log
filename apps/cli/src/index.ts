@@ -22,7 +22,6 @@ async function prompt(name: string, message: string): Promise<string> {
 		message,
 		validate: (value) => value.length > 0,
 	});
-	console.log(response[name]);
 	return response[name];
 }
 
@@ -80,6 +79,9 @@ async function searchNotes() {
 	let query = args[1];
 	if (!query) {
 		query = await prompt("query", "Search Term: ");
+		if (!query) {
+			process.exit(1);
+		}
 	}
 	const files = fs.readdirSync(LOGS_DIR).filter((f) => f.endsWith(".md"));
 	const matchingFiles: string[] = [];
