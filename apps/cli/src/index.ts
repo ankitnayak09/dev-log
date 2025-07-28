@@ -5,6 +5,7 @@ import path from "path";
 import prompts from "prompts";
 
 import { LOGS_DIR } from "./constants";
+import FileContentViewer from "./utils/fileContentViewer";
 // TODO: Customizable through CLI command
 // TODO: CLI command to show where all notes are present
 // TODO: CLI command to change the notes directory
@@ -102,20 +103,7 @@ async function searchNotes() {
 		console.log("No matching notes found.");
 		return;
 	}
-	const selectedFile = await prompts({
-		type: "select",
-		name: "file",
-		message: "Select a note",
-		choices: matchingFiles.map((file) => ({
-			title: file,
-			value: file,
-		})),
-	});
-	if (selectedFile) {
-		const filepath = path.join(LOGS_DIR, selectedFile.file);
-		const content = fs.readFileSync(filepath, "utf-8");
-		console.log(content);
-	}
+	FileContentViewer(matchingFiles);
 }
 
 async function help() {
