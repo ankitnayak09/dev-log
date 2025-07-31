@@ -2,6 +2,7 @@ import prompts from "prompts";
 import fs from "fs";
 import path from "path";
 import { LOGS_DIR } from "../constants";
+import { getFileNameWithoutDate } from "./getFileNameWithoutDate";
 
 export default async function FileContentViewer(matchingFiles: string[]) {
 	let keepOpened = true;
@@ -11,7 +12,7 @@ export default async function FileContentViewer(matchingFiles: string[]) {
 			name: "selectedFile",
 			message: "Select a file to view:",
 			choices: matchingFiles.map((file) => ({
-				title: file,
+				title: getFileNameWithoutDate(file),
 				value: file,
 			})),
 			// onCancel: () => {
@@ -57,6 +58,7 @@ export default async function FileContentViewer(matchingFiles: string[]) {
 				if (key === "\u001b") {
 					// ESC
 					cleanup();
+					console.clear();
 					resolve();
 				} else if (key === "\u001b[A") {
 					// Up arrow

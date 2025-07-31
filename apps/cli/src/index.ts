@@ -12,6 +12,7 @@ import chalk from "chalk";
 import { LOGS_DIR } from "./constants";
 import FileContentViewer from "./utils/fileContentViewer";
 import { getFirstContentLine } from "./utils/getFirstContentLine";
+import { getFileNameWithoutDate } from "./utils/getFileNameWithoutDate";
 
 // Ensure notes directory exists
 if (!fs.existsSync(LOGS_DIR)) {
@@ -63,18 +64,17 @@ async function addNote() {
 }
 
 async function listNotes() {
-	// TODO: ADD features of navigation within terminal, show paginated list, can view each log in terminal, and navigate back to list
 	const files = fs.readdirSync(LOGS_DIR).filter((f) => f.endsWith(".md"));
 	if (files.length === 0) {
 		console.log(chalk.yellow("📝 No logs found."));
 		return;
 	}
-	console.log(chalk.blue(`📚 Found ${files.length} notes:\n`));
-	files.forEach(async (file, index) => {
+	console.log(chalk.blue(`📚 Found ${files.length} notes:`));
+	files.forEach(async (file) => {
 		const filepath = path.join(LOGS_DIR, file);
 		const content = await fs.promises.readFile(filepath, "utf-8");
 		const firstLine = getFirstContentLine(content);
-		console.log(chalk.cyan(`${index + 1}. ${file}`));
+		console.log(chalk.cyan(`=> ${getFileNameWithoutDate(file)}`));
 		console.log(chalk.gray(`   ${firstLine}\n`));
 	});
 }
