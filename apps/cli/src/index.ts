@@ -13,6 +13,7 @@ import { LOGS_DIR } from "./constants";
 import FileContentViewer from "./utils/fileContentViewer";
 import { getFirstContentLine } from "./utils/getFirstContentLine";
 import { getFileNameWithoutDate } from "./utils/getFileNameWithoutDate";
+import { detectProjectName } from "./utils/detectProjectName";
 
 // Ensure notes directory exists
 if (!fs.existsSync(LOGS_DIR)) {
@@ -23,6 +24,7 @@ async function prompt(
 	name: string,
 	message: string,
 	required: boolean = false,
+	placeholder?: string,
 	validator?: (value: string) => boolean
 ): Promise<string> {
 	const promptConfig: any = {
@@ -34,6 +36,9 @@ async function prompt(
 		promptConfig.validate =
 			validator || ((value: string) => value.length > 0);
 	}
+	if (placeholder) {
+		promptConfig.initial = placeholder;
+	}
 	const response = await prompts(promptConfig);
 	return response[name];
 }
@@ -41,8 +46,13 @@ async function prompt(
 async function addNote() {
 	// * adding date to filename ensures every file_name is unique
 	const date = new Date().toISOString();
-	// TODO: Automatic project detection from git repo or folder name
-	const project = await prompt("project", "Project name: ");
+	const detectedProject = detectProjectName();
+	const project = await prompt(
+		"project",
+		"Project name: ",
+		false,
+		detectedProject
+	);
 	// TODO: create a default template and store in LOGS_DIR/templates
 	const template = await prompt(
 		"template",
