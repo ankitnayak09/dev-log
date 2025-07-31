@@ -19,17 +19,27 @@ if (!fs.existsSync(LOGS_DIR)) {
 	fs.mkdirSync(LOGS_DIR, { recursive: true });
 }
 
-async function prompt(name: string, message: string): Promise<string> {
-	const response = await prompts({
+async function prompt(
+	name: string,
+	message: string,
+	required: boolean = false,
+	validator?: (value: string) => boolean
+): Promise<string> {
+	const promptConfig: any = {
 		type: "text",
 		name,
 		message,
-		validate: (value) => value.length > 0,
-	});
+	};
+	if (required) {
+		promptConfig.validate =
+			validator || ((value: string) => value.length > 0);
+	}
+	const response = await prompts(promptConfig);
 	return response[name];
 }
 
 async function addNote() {
+	// * adding date to filename ensures every file_name is unique
 	const date = new Date().toISOString();
 	// TODO: Automatic project detection from git repo or folder name
 	const project = await prompt("project", "Project name: ");
@@ -39,9 +49,9 @@ async function addNote() {
 		"Template (e.g., Bug, Learn, Work): "
 	);
 	const heading = await prompt("heading", "Title: ");
-	// TODO: should be able to add multi line content
+	// TODO: should be able to add multi line content and also have #heading default based on template choosen
 	const content = await prompt("content", "Note Content: \n");
-	const tags = await prompt("tags", "Tags (comma separated): ");
+	const tags = await prompt("tags", "Tags (comma separated): ", false);
 
 	const filename = `${date.replace(/[:.]/g, "-")}_${heading.replace(/\s+/g, "-")}.md`;
 	const filepath = path.join(LOGS_DIR, filename);
