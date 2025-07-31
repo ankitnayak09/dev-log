@@ -4,7 +4,7 @@
 		"module": "commonjs" /* Specify what module code is generated. */,
 		"moduleResolution": "Node",
 		"rootDir": "./src" /* Specify the root folder within your source files. */,
-		"outDir": "./dist" /* Specify the output folder for all emitted files. */
+		"outDir": "./bin" /* Specify the output folder for all emitted files. */
 	},
 	"include": ["src"]
 }
