@@ -3,12 +3,15 @@
 import fs from "fs";
 import path from "path";
 import prompts from "prompts";
+import { Command } from "commander";
+import chalk from "chalk";
 
 // TODO: Customizable through CLI command
 // TODO: CLI command to change the notes directory
 // TODO: CLI command to show where all notes are present
 import { LOGS_DIR } from "./constants";
 import FileContentViewer from "./utils/fileContentViewer";
+import { getFirstContentLine } from "./utils/getFirstContentLine";
 
 // Ensure notes directory exists
 if (!fs.existsSync(LOGS_DIR)) {
@@ -29,11 +32,13 @@ async function addNote() {
 	const date = new Date().toISOString();
 	// TODO: Automatic project detection from git repo or folder name
 	const project = await prompt("project", "Project name: ");
+	// TODO: create a default template and store in LOGS_DIR/templates
 	const template = await prompt(
 		"template",
 		"Template (e.g., Bug, Learn, Work): "
 	);
 	const heading = await prompt("heading", "Title: ");
+	// TODO: should be able to add multi line content
 	const content = await prompt("content", "Note Content: \n");
 	const tags = await prompt("tags", "Tags (comma separated): ");
 
@@ -54,29 +59,28 @@ async function addNote() {
     `;
 
 	fs.writeFileSync(filepath, frontmatter, "utf-8");
-	console.log(`Note saved to ${filepath}`);
+	console.log(chalk.green(`✅ Note saved to ${filepath}`));
 }
 
 async function listNotes() {
 	// TODO: ADD features of navigation within terminal, show paginated list, can view each log in terminal, and navigate back to list
 	const files = fs.readdirSync(LOGS_DIR).filter((f) => f.endsWith(".md"));
 	if (files.length === 0) {
-		console.log("No logs found.");
+		console.log(chalk.yellow("📝 No logs found."));
 		return;
 	}
-	files.forEach((file) => {
+	console.log(chalk.blue(`📚 Found ${files.length} notes:\n`));
+	files.forEach(async (file, index) => {
 		const filepath = path.join(LOGS_DIR, file);
-		const content = fs.readFileSync(filepath, "utf-8");
-		const firstLine = content
-			.split("\n")
-			.find((line) => line && !line.startsWith("---"));
-		console.log(`${file}: ${firstLine || " "}`);
+		const content = await fs.promises.readFile(filepath, "utf-8");
+		const firstLine = getFirstContentLine(content);
+		console.log(chalk.cyan(`${index + 1}. ${file}`));
+		console.log(chalk.gray(`   ${firstLine}\n`));
 	});
 }
 
-async function searchNotes() {
+async function searchNotes(query: string) {
 	// TODO: able to navigate all notes, and add color
-	let query = args[1];
 	if (!query) {
 		query = await prompt("query", "Search Term: ");
 		if (!query) {
@@ -91,44 +95,107 @@ async function searchNotes() {
 		files.map(async (file) => {
 			const filepath = path.join(LOGS_DIR, file);
 			const data = await fs.promises.readFile(filepath, "utf-8");
+			// TODO: match query with title also
 			if (data.includes(query)) {
 				matchingFiles.push(file);
 			}
 		})
 	);
 	if (matchingFiles.length === 0) {
-		console.log("No matching notes found.");
+		console.log(
+			chalk.yellow(`🔍 No notes found matching "${chalk.bold(query)}"`)
+		);
 		return;
 	}
-	FileContentViewer(matchingFiles);
+	console.log(
+		chalk.green(
+			`🔍 Found ${matchingFiles.length} matching notes for "${chalk.bold(query)}"`
+		)
+	);
+	await FileContentViewer(matchingFiles);
 }
 
-async function help() {
-	console.log("Help Called");
-}
-const args = process.argv.slice(2);
+// async function help() {
+// 	console.log("Help Called");
+// }
+// const args = process.argv.slice(2);
 
-async function main() {
-	const command = args[0];
+// async function main() {
+// 	const command = args[0];
 
-	if (!command) {
-		help();
-		return;
-	}
+// 	if (!command) {
+// 		help();
+// 		return;
+// 	}
 
-	const functionToCall: Record<string, () => Promise<void>> = {
-		add: addNote,
-		list: listNotes,
-		help: help,
-		search: searchNotes,
-	};
+// 	const functionToCall: Record<string, () => Promise<void>> = {
+// 		add: addNote,
+// 		list: listNotes,
+// 		help: help,
+// 		search: searchNotes,
+// 	};
 
-	if (functionToCall[command]) {
-		await functionToCall[command]();
-	} else {
-		console.log(`Unknown command: ${command}`);
-		help();
-	}
-}
+// 	if (functionToCall[command]) {
+// 		await functionToCall[command]();
+// 	} else {
+// 		console.log(`Unknown command: ${command}`);
+// 		help();
+// 	}
+// }
 
-main();
+// main();
+const program = new Command();
+
+program
+	.name("dev-log")
+	.description("A CLI tool for managing development logs")
+	.version("1.0.0");
+
+program
+	.command("add")
+	.description("Add a new development log entry")
+	.action(async () => {
+		try {
+			await addNote();
+		} catch (error) {
+			console.log(chalk.red("❌ Error adding note: "), error);
+			process.exit(1);
+		}
+	});
+
+program
+	.command("list")
+	.alias("ls")
+	.description("List all dev logs")
+	.action(async () => {
+		try {
+			await listNotes();
+		} catch (error) {
+			console.log(chalk.red("❌ Error listing notes: "), error);
+			process.exit(1);
+		}
+	});
+
+program
+	.command("search")
+	.alias("s")
+	.description("Search through development logs")
+	.argument("[query]", "Search term to look for")
+	.action(async (query) => {
+		try {
+			await searchNotes(query);
+		} catch (error) {
+			console.error(chalk.red("❌ Error searching notes:"), error);
+			process.exit(1);
+		}
+	});
+// TODO: Delete Note
+// TODO: Update Note, open using cli, use keyboard event to open in editor
+//
+
+// Default action when no command is provided
+program.action(() => {
+	program.help();
+});
+
+program.parse();
