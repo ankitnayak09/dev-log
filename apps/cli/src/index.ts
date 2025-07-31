@@ -63,7 +63,7 @@ async function addNote() {
 	const content = await prompt("content", "Note Content: \n");
 	const tags = await prompt("tags", "Tags (comma separated): ", false);
 
-	const filename = `${date.replace(/[:.]/g, "-")}_${heading.replace(/\s+/g, "-")}.md`;
+	const filename = `${date?.replace(/[:.]/g, "-")}_${title?.replace(/\s+/g, "-")}.md`;
 	const filepath = path.join(LOGS_DIR, filename);
 	const frontmatter = `
     ---
@@ -71,14 +71,17 @@ async function addNote() {
     project: ${project}
     template: ${template}
     tags: [${tags
-		.split(",")
-		.map((t) => t.trim())
-		.filter(Boolean)}]
+		?.split(",")
+		?.map((t) => t.trim())
+		?.filter(Boolean)}]
     ---
     
     ${content}
     `;
-
+	if (!title || !content) {
+		console.log(chalk.red(`❌ Invalid Log Entry`));
+		process.exit(1);
+	}
 	fs.writeFileSync(filepath, frontmatter, "utf-8");
 	console.log(chalk.green(`✅ Note saved to ${filepath}`));
 }
@@ -100,7 +103,6 @@ async function listNotes() {
 }
 
 async function searchNotes(query: string) {
-	// TODO: able to navigate all notes, and add color
 	if (!query) {
 		query = await prompt("query", "Search Term: ");
 		if (!query) {
@@ -115,7 +117,7 @@ async function searchNotes(query: string) {
 		files.map(async (file) => {
 			const filepath = path.join(LOGS_DIR, file);
 			const data = await fs.promises.readFile(filepath, "utf-8");
-			// TODO: match query with title also
+			// TODO: allow user to search using regExp
 			if (data.includes(query)) {
 				matchingFiles.push(file);
 			}
