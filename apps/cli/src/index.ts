@@ -115,35 +115,6 @@ async function searchNotes(query: string) {
 	await FileContentViewer(matchingFiles);
 }
 
-// async function help() {
-// 	console.log("Help Called");
-// }
-// const args = process.argv.slice(2);
-
-// async function main() {
-// 	const command = args[0];
-
-// 	if (!command) {
-// 		help();
-// 		return;
-// 	}
-
-// 	const functionToCall: Record<string, () => Promise<void>> = {
-// 		add: addNote,
-// 		list: listNotes,
-// 		help: help,
-// 		search: searchNotes,
-// 	};
-
-// 	if (functionToCall[command]) {
-// 		await functionToCall[command]();
-// 	} else {
-// 		console.log(`Unknown command: ${command}`);
-// 		help();
-// 	}
-// }
-
-// main();
 const program = new Command();
 
 program
