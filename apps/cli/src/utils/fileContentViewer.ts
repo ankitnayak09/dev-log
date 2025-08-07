@@ -58,7 +58,7 @@ export default async function FileContentViewer(matchingFiles: string[]) {
 				if (key === "\u001b") {
 					// ESC
 					cleanup();
-					console.clear();
+					// console.clear();
 					resolve();
 				} else if (key === "\u001b[A") {
 					// Up arrow
