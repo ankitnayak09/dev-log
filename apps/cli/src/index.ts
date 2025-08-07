@@ -112,7 +112,6 @@ async function searchNotes(query: string) {
 	const files = fs.readdirSync(LOGS_DIR).filter((f) => f.endsWith(".md"));
 	const matchingFiles: string[] = [];
 
-	// TODO: use regex to search
 	let regex;
 	try {
 		regex = new RegExp(query, "i");
@@ -126,8 +125,6 @@ async function searchNotes(query: string) {
 		files.map(async (file) => {
 			const filepath = path.join(LOGS_DIR, file);
 			const data = await fs.promises.readFile(filepath, "utf-8");
-			// TODO: allow user to search using regExp
-			// TODO: allow case insensitive search
 			if (regex.test(data)) {
 				matchingFiles.push(file);
 			}
