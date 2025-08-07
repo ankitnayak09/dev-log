@@ -58,7 +58,7 @@ async function addNote() {
 		"template",
 		"Template (e.g., Bug, Learn, Work): "
 	);
-	const heading = await prompt("heading", "Title: ");
+	const title = await prompt("title", "Title: ");
 	// TODO: should be able to add multi line content and also have #heading default based on template choosen
 	const content = await prompt("content", "Note Content: \n");
 	const tags = await prompt("tags", "Tags (comma separated): ", false);
@@ -112,17 +112,28 @@ async function searchNotes(query: string) {
 	const files = fs.readdirSync(LOGS_DIR).filter((f) => f.endsWith(".md"));
 	const matchingFiles: string[] = [];
 
+	// TODO: use regex to search
+	let regex;
+	try {
+		regex = new RegExp(query, "i");
+	} catch (err: any) {
+		console.error("Invalid regex: ", err.message);
+		return;
+	}
+
 	// All the file checks start at once
 	await Promise.all(
 		files.map(async (file) => {
 			const filepath = path.join(LOGS_DIR, file);
 			const data = await fs.promises.readFile(filepath, "utf-8");
 			// TODO: allow user to search using regExp
-			if (data.includes(query)) {
+			// TODO: allow case insensitive search
+			if (regex.test(data)) {
 				matchingFiles.push(file);
 			}
 		})
 	);
+
 	if (matchingFiles.length === 0) {
 		console.log(
 			chalk.yellow(`🔍 No notes found matching "${chalk.bold(query)}"`)
